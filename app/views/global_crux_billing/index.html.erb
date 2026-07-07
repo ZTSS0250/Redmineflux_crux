@@ -1,0 +1,46 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_billing, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<p>Plan tier: <span class="crux-badge crux-badge-info"><%= @plan_tier %></span></p>
+
+<div class="crux-stats">
+  <% @stats.each do |stat| %>
+    <div class="crux-stat-tile">
+      <span class="crux-stat-value"><%= stat[:value] %></span>
+      <span class="crux-stat-label"><%= stat[:label] %></span>
+    </div>
+  <% end %>
+</div>
+
+<div class="crux-section-title">Cost per Project</div>
+<table class="list">
+  <thead><tr><th>Project</th><th>Cost</th></tr></thead>
+  <tbody>
+    <% @cost_per_project.each do |project| %>
+      <tr>
+        <td><%= project[:name] %></td>
+        <td><%= project[:cost] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="crux-section-title">Plan Tiers</div>
+<table class="list">
+  <thead><tr><th>Capability</th><th>Starter</th><th>Team</th><th>Enterprise</th></tr></thead>
+  <tbody>
+    <% @tiers.each do |tier| %>
+      <tr>
+        <td><%= tier[:capability] %></td>
+        <td><%= tier[:starter] %></td>
+        <td><%= tier[:team] %></td>
+        <td><%= tier[:enterprise] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

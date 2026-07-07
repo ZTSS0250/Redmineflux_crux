@@ -1,0 +1,19 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_settings, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+  <tbody>
+    <% @settings.each do |setting| %>
+      <tr>
+        <td><%= setting[:key] %></td>
+        <td><%= setting[:value] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -1,0 +1,35 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_audit, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead>
+    <tr><th>Run</th><th>Agent</th><th>Project</th><th>User</th><th>Action</th><th>Model</th><th>Tokens</th><th>Cost</th><th>Status</th><th>Date</th></tr>
+  </thead>
+  <tbody>
+    <% @runs.each do |run| %>
+      <tr>
+        <td>#<%= run[:id] %></td>
+        <td><%= run[:agent] %></td>
+        <td><%= run[:project] %></td>
+        <td><%= run[:user] %></td>
+        <td><%= run[:action] %></td>
+        <td><%= run[:model] %></td>
+        <td><%= run[:tokens] %></td>
+        <td><%= run[:cost] %></td>
+        <td>
+          <% if run[:status] == 'completed' %>
+            <span class="crux-badge crux-badge-success">Completed</span>
+          <% else %>
+            <span class="crux-badge crux-badge-danger">Failed</span>
+          <% end %>
+        </td>
+        <td><%= run[:at] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

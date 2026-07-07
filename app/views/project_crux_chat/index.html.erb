@@ -1,0 +1,73 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_project_sidebar/project_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+<%= stylesheet_link_tag('crux_chat', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_chat, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — UI only, not wired to an agent yet</span>
+
+<div class="crux-chat">
+  <div class="crux-chat-thread" id="crux-chat-thread">
+    <% @messages.each do |msg| %>
+      <div class="crux-chat-message crux-chat-<%= msg[:role] %>">
+        <div class="crux-chat-meta">
+          <span class="crux-chat-sender"><%= msg[:name] %></span>
+          <span class="crux-chat-time"><%= msg[:at] %></span>
+        </div>
+        <div class="crux-chat-bubble"><%= msg[:text] %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="crux-chat-composer">
+    <input type="text" id="crux-chat-input" placeholder="<%= l(:label_chat_placeholder, :scope => :crux) %>" autocomplete="off">
+    <button type="button" id="crux-chat-send" class="crux-chat-send-btn"><%= l(:label_chat_send, :scope => :crux) %></button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    var thread = document.getElementById('crux-chat-thread');
+    var input = document.getElementById('crux-chat-input');
+    var sendBtn = document.getElementById('crux-chat-send');
+
+    function appendMessage(role, sender, text) {
+      var wrap = document.createElement('div');
+      wrap.className = 'crux-chat-message crux-chat-' + role;
+
+      var meta = document.createElement('div');
+      meta.className = 'crux-chat-meta';
+      meta.innerHTML = '<span class="crux-chat-sender"></span><span class="crux-chat-time">just now</span>';
+      meta.querySelector('.crux-chat-sender').textContent = sender;
+
+      var bubble = document.createElement('div');
+      bubble.className = 'crux-chat-bubble';
+      bubble.textContent = text;
+
+      wrap.appendChild(meta);
+      wrap.appendChild(bubble);
+      thread.appendChild(wrap);
+      thread.scrollTop = thread.scrollHeight;
+    }
+
+    function sendPrompt() {
+      var text = input.value.trim();
+      if (!text) { return; }
+      appendMessage('user', 'You', text);
+      input.value = '';
+
+      window.setTimeout(function() {
+        appendMessage('agent', 'Crux', 'This is a UI preview — chat isn\'t wired to an agent yet.');
+      }, 500);
+    }
+
+    sendBtn.addEventListener('click', sendPrompt);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendPrompt();
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+  <!-- Legs -->
+  <g fill="none" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round">
+    <line x1="38" y1="30" x2="26" y2="14"/>
+    <line x1="62" y1="30" x2="74" y2="14"/>
+    <line x1="38" y1="70" x2="26" y2="86"/>
+    <line x1="62" y1="70" x2="74" y2="86"/>
+    <line x1="30" y1="40" x2="12" y2="40"/>
+    <line x1="30" y1="60" x2="12" y2="60"/>
+    <line x1="70" y1="40" x2="88" y2="40"/>
+    <line x1="70" y1="60" x2="88" y2="60"/>
+  </g>
+
+  <!-- Leg tips -->
+  <g fill="#ffffff" stroke="#1a1a1a" stroke-width="3">
+    <circle cx="26" cy="14" r="4"/>
+    <circle cx="74" cy="14" r="4"/>
+    <circle cx="26" cy="86" r="4"/>
+    <circle cx="74" cy="86" r="4"/>
+    <circle cx="12" cy="40" r="4"/>
+    <circle cx="12" cy="60" r="4"/>
+    <circle cx="88" cy="40" r="4"/>
+    <circle cx="88" cy="60" r="4"/>
+  </g>
+
+  <!-- Chip body -->
+  <rect x="30" y="30" width="40" height="40" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="4"/>
+
+  <!-- Label -->
+  <text x="50" y="52" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="22" fill="#1a1a1a">AI</text>
+</svg>

@@ -1,0 +1,12 @@
+/* ============================================================
+   redmineflux_crux – Administration menu icon
+   ============================================================ */
+
+
+
+a.icon.icon-crux-ai.global-crux {
+  background-image: url(../images/crux.svg);
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  padding-left: 22px;
+}

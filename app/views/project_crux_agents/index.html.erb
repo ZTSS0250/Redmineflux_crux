@@ -1,0 +1,26 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_project_sidebar/project_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_agent, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Agent</th><th>Status</th><th>Model</th></tr></thead>
+  <tbody>
+    <% @agents.each do |agent| %>
+      <tr>
+        <td><%= agent[:name] %></td>
+        <td>
+          <% if agent[:status] == 'enabled' %>
+            <span class="crux-badge crux-badge-success">Enabled</span>
+          <% else %>
+            <span class="crux-badge crux-badge-muted">Disabled</span>
+          <% end %>
+        </td>
+        <td><%= agent[:model] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

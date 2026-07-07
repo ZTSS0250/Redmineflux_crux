@@ -1,0 +1,166 @@
+/* ============================================================
+   redmineflux_crux – Sidebar Stylesheet
+   ============================================================ */
+
+/* ── Redmine sidebar panel ───────────────────────────────────── */
+.controller-global_crux #main #sidebar,
+.controller-global_crux_agents #main #sidebar,
+.controller-global_crux_audit #main #sidebar,
+.controller-global_crux_billing #main #sidebar,
+.controller-global_crux_providers #main #sidebar,
+.controller-global_crux_settings #main #sidebar,
+.controller-project_crux #main #sidebar,
+.controller-project_crux_chat #main #sidebar,
+.controller-project_crux_agents #main #sidebar,
+.controller-project_crux_billing #main #sidebar,
+.controller-project_crux_settings #main #sidebar {
+  display: block;
+  float: left;
+  width: 40px;
+  padding-right: 19px !important;
+  background: #D1EBFA !important;
+  box-shadow: 0px 1px 5px #D8EBFF;
+  border-radius: 4px;
+}
+
+.controller-global_crux #main,
+.controller-global_crux_agents #main,
+.controller-global_crux_audit #main,
+.controller-global_crux_billing #main,
+.controller-global_crux_providers #main,
+.controller-global_crux_settings #main,
+.controller-project_crux #main,
+.controller-project_crux_chat #main,
+.controller-project_crux_agents #main,
+.controller-project_crux_billing #main,
+.controller-project_crux_settings #main {
+  flex-direction: row;
+}
+
+/* ── Hide toggle arrow for this plugin ──────────────────────── */
+.controller-global_crux #toggle.toggle_class::before,
+.controller-global_crux_agents #toggle.toggle_class::before,
+.controller-global_crux_audit #toggle.toggle_class::before,
+.controller-global_crux_billing #toggle.toggle_class::before,
+.controller-global_crux_providers #toggle.toggle_class::before,
+.controller-global_crux_settings #toggle.toggle_class::before,
+.controller-project_crux #toggle.toggle_class::before,
+.controller-project_crux_chat #toggle.toggle_class::before,
+.controller-project_crux_agents #toggle.toggle_class::before,
+.controller-project_crux_billing #toggle.toggle_class::before,
+.controller-project_crux_settings #toggle.toggle_class::before {
+  display: none;
+}
+
+/* ── Sidebar nav item spacing ───────────────────────────────── */
+.sidebar-crux-dashboard { margin-top: 20px; }
+.sidebar-crux-chat,
+.sidebar-crux-agents,
+.sidebar-crux-audit,
+.sidebar-crux-billing,
+.sidebar-crux-providers,
+.sidebar-crux-settings { margin-top: 10px; }
+
+/* ── Icon button base ───────────────────────────────────────── */
+a.btn-crux-dashboard,
+a.btn-crux-chat,
+a.btn-crux-agents,
+a.btn-crux-audit,
+a.btn-crux-billing,
+a.btn-crux-providers,
+a.btn-crux-settings {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  margin: 0 !important;
+  color: rgb(0, 148, 255);
+  width: 35px;
+  height: 39px;
+  transition: all 0.2s ease;
+}
+
+a.btn-crux-dashboard:hover,
+a.btn-crux-chat:hover,
+a.btn-crux-agents:hover,
+a.btn-crux-audit:hover,
+a.btn-crux-billing:hover,
+a.btn-crux-providers:hover,
+a.btn-crux-settings:hover {
+  background-color: rgba(0, 148, 255, 0.15);
+  color: rgb(0, 148, 255);
+}
+
+/* SVG icon styling */
+a.btn-crux-dashboard svg,
+a.btn-crux-chat svg,
+a.btn-crux-agents svg,
+a.btn-crux-audit svg,
+a.btn-crux-billing svg,
+a.btn-crux-providers svg,
+a.btn-crux-settings svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  transition: all 0.2s ease;
+}
+
+/* ── Active states (CSS body-class targeting) ───────────────── */
+
+/* Dashboard */
+.controller-global_crux.action-show a.btn-crux-dashboard,
+.controller-project_crux.action-index a.btn-crux-dashboard {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+/* Chat (project only) */
+.controller-project_crux_chat.action-index a.btn-crux-chat {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+/* Agents */
+.controller-global_crux_agents.action-index a.btn-crux-agents,
+.controller-project_crux_agents.action-index a.btn-crux-agents {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+/* Audit (global only) */
+.controller-global_crux_audit.action-index a.btn-crux-audit {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+/* Billing */
+.controller-global_crux_billing.action-index a.btn-crux-billing,
+.controller-project_crux_billing.action-index a.btn-crux-billing {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+/* Providers (global only) */
+.controller-global_crux_providers.action-index a.btn-crux-providers {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+/* Settings */
+.controller-global_crux_settings.action-index a.btn-crux-settings,
+.controller-project_crux_settings.action-index a.btn-crux-settings {
+  background-color: rgba(0, 148, 255, 0.27);
+  color: rgb(0, 148, 255);
+}
+
+div#sidebar-switch-panel{
+  display: none;
+}

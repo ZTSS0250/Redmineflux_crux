@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crux — Vision &amp; Design Document</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23171a21'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='34' fill='%239aa0f5' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#171a21; --ink-soft:#454b58; --muted:#5a6170; --line:#dee2e8;
+    --paper:#f3f5f8; --surface:#ffffff;
+    --accent:#4148b0; --accent-soft:#eceefb;
+    --warn:#8a5b18; --warn-soft:#f7ecd8;
+    --ok:#276a45; --ok-soft:#e5f1ea;
+    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'SF Mono', Consolas, 'Liberation Mono', monospace;
+    --fs-h1: clamp(2.1rem, 4.2vw, 3.25rem);
+    --fs-h2: 1.75rem;
+    --fs-h3: 1.125rem;
+    --fs-body: 1rem;
+    --fs-small: 0.875rem;
+    --fs-caption: 0.75rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#edeff3; --ink-soft:#c7ccd6; --muted:#9099a8; --line:#2a2e38;
+      --paper:#14161c; --surface:#1b1e26;
+      --accent:#9aa0f5; --accent-soft:#262b52;
+      --warn:#e0ab5c; --warn-soft:#3a2c16;
+      --ok:#7bc99c; --ok-soft:#193325;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#edeff3; --ink-soft:#c7ccd6; --muted:#9099a8; --line:#2a2e38;
+    --paper:#14161c; --surface:#1b1e26;
+    --accent:#9aa0f5; --accent-soft:#262b52;
+    --warn:#e0ab5c; --warn-soft:#3a2c16;
+    --ok:#7bc99c; --ok-soft:#193325;
+  }
+  :root[data-theme="light"]{
+    --ink:#171a21; --ink-soft:#454b58; --muted:#5a6170; --line:#dee2e8;
+    --paper:#f3f5f8; --surface:#ffffff;
+    --accent:#4148b0; --accent-soft:#eceefb;
+    --warn:#8a5b18; --warn-soft:#f7ecd8;
+    --ok:#276a45; --ok-soft:#e5f1ea;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-body); font-size:var(--fs-body); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--font-display); text-wrap:balance; color:var(--ink); font-weight:700;}
+  p{margin:0 0 1em; max-width:42rem;}
+  ul,ol{margin:0 0 1em; padding-left:1.25em; max-width:42rem;}
+  li{margin-bottom:.35em;}
+  a{color:var(--accent);}
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;
+  }
+  .skip-link{
+    position:absolute; left:-999px; top:0; background:var(--surface); color:var(--ink);
+    padding:.6rem 1rem; z-index:100; border:1px solid var(--line);
+  }
+  .skip-link:focus{ left:1rem; top:1rem; }
+
+  .layout{
+    display:grid; grid-template-columns:15rem minmax(0,1fr); gap:3rem;
+    max-width:1180px; margin:0 auto; padding:3rem 2rem 6rem;
+  }
+  .masthead{ grid-column:1 / -1; }
+
+  .kicker{
+    font:600 var(--fs-caption)/1 var(--font-mono); text-transform:uppercase;
+    letter-spacing:.1em; color:var(--accent); margin:0 0 .9rem;
+  }
+  .masthead h1{ font-size:var(--fs-h1); margin:0 0 1.5rem; max-width:28ch; }
+  .meta-strip{
+    display:flex; flex-wrap:wrap; gap:2rem; margin:0;
+    padding-top:1.5rem; border-top:1px solid var(--line);
+  }
+  .meta-strip > div{ display:flex; flex-direction:column; gap:.2rem; }
+  .meta-strip dt{
+    font:600 var(--fs-caption)/1 var(--font-mono); text-transform:uppercase;
+    letter-spacing:.08em; color:var(--muted); margin:0;
+  }
+  .meta-strip dd{ margin:0; font-size:.9375rem; color:var(--ink-soft); }
+
+  .docket{ align-self:start; position:sticky; top:1.75rem; }
+  .docket ol{ list-style:none; margin:0; padding:0; max-width:none; }
+  .docket li{ margin:0; }
+  .docket a{
+    display:flex; gap:.6rem; align-items:baseline; padding:.4rem .5rem;
+    text-decoration:none; color:var(--muted); font-size:.875rem; border-radius:4px;
+    border-left:2px solid transparent;
+  }
+  .docket a:hover{ color:var(--ink); }
+  .docket a.is-active{
+    color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft);
+    font-weight:600;
+  }
+  .docket .num{
+    font:400 .75rem/1.4 var(--font-mono); color:var(--line); flex-shrink:0; width:1.4em;
+  }
+  .docket a.is-active .num{ color:var(--accent); }
+
+  main{ min-width:0; }
+  .art{ padding-block:3rem; border-top:1px solid var(--line); }
+  .art:first-of-type{ border-top:none; padding-top:0; }
+  .art-head{ display:flex; align-items:baseline; gap:.75rem; margin-bottom:1.25rem; }
+  .art-num{ font:400 .9375rem/1 var(--font-mono); color:var(--accent); letter-spacing:.04em; }
+  .art h2{ font-size:var(--fs-h2); margin:0; }
+  .art h3{ font-size:var(--fs-h3); margin:1.4em 0 .5em; }
+  .art h3:first-child{ margin-top:0; }
+  .lede{ font-size:1.0625rem; color:var(--ink-soft); }
+
+  .chip{
+    display:inline-flex; align-items:center; padding:.35em .7em; margin:0 .35em .35em 0;
+    border:1px solid var(--line); border-radius:3px; font-size:var(--fs-small);
+    background:var(--surface); color:var(--ink-soft);
+  }
+  .chip--accent{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+  .chip-row{ max-width:none; }
+
+  .crumbs{
+    display:inline-flex; align-items:center; gap:.4rem; font:.8125rem var(--font-mono);
+    color:var(--muted); padding:.55rem .8rem; background:var(--surface);
+    border:1px solid var(--line); border-radius:4px; margin-bottom:1.25rem;
+  }
+  .crumbs .sep{ color:var(--line); }
+  .crumbs .current{ color:var(--accent); font-weight:600; }
+
+  .arch{
+    position:relative; border:1px solid var(--line); border-radius:4px;
+    padding:2rem 1.25rem 1.5rem; background:var(--surface); margin:1.5rem 0 2rem;
+  }
+  .arch-tag{
+    position:absolute; top:-.65em; left:1rem; background:var(--paper);
+    padding:0 .5em; font:600 var(--fs-caption)/1 var(--font-mono);
+    text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+  }
+  .arch-tag--accent{ color:var(--accent); }
+  .arch-modules{ max-width:none; margin-bottom:1.5rem; }
+  .arch-plugin{
+    position:relative; border:1px dashed var(--accent); border-radius:4px;
+    padding:1.75rem 1rem 1rem; background:var(--accent-soft);
+  }
+  .arch-engines{ max-width:none; }
+
+  .stepper{ list-style:none; margin:1.5rem 0; padding:0 0 0 .6rem; border-left:2px solid var(--line); max-width:36rem; }
+  .stepper li{ position:relative; padding:0 0 1.4rem 1.4rem; font-size:.9375rem; }
+  .stepper li::before{
+    content:''; position:absolute; left:-.5rem; top:.25rem; width:.6rem; height:.6rem;
+    border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px var(--paper);
+  }
+  .stepper li:last-child{ padding-bottom:0; }
+  .stepper .branch{
+    margin:.6rem 0 0; padding:.75rem .9rem; border-left:2px dashed var(--warn);
+    background:var(--warn-soft); border-radius:0 4px 4px 0; font-size:.875rem;
+    max-width:none;
+  }
+  .stepper .branch strong{ color:var(--warn); }
+
+  .prompt-bubble{
+    max-width:36rem; margin:1.25rem 0; padding:.9rem 1.1rem; border-radius:4px;
+    background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
+    font-style:italic; color:var(--ink-soft);
+  }
+
+  .screen{
+    border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--surface);
+    margin:1.5rem 0 2rem; box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .screen__bar{
+    display:flex; align-items:center; gap:.5rem; padding:.6rem .9rem;
+    background:var(--paper); border-bottom:1px solid var(--line);
+    font:var(--fs-caption) var(--font-mono); color:var(--muted);
+  }
+  .screen__dot{ width:.5rem; height:.5rem; border-radius:50%; background:var(--line); }
+  .screen__title{ margin-left:.3rem; letter-spacing:.02em; }
+  .screen__body{ padding:1.25rem; }
+  .screen__body > *:last-child{ margin-bottom:0; }
+
+  .tabbar{ display:flex; flex-wrap:wrap; gap:1.4rem; max-width:none; }
+  .tabbar a{
+    text-decoration:none; color:var(--muted); font-size:.875rem; padding-bottom:.4rem;
+    border-bottom:2px solid transparent;
+  }
+  .tabbar a.active{ color:var(--accent); border-color:var(--accent); font-weight:600; }
+
+  .table-wrap{ overflow-x:auto; margin:1.25rem 0 2rem; }
+  table.ledger{ width:100%; border-collapse:collapse; font-size:.9rem; max-width:none; }
+  .ledger th{
+    text-align:left; font:600 var(--fs-caption) var(--font-mono); text-transform:uppercase;
+    letter-spacing:.06em; color:var(--muted); padding:.55rem .8rem; border-bottom:1px solid var(--ink-soft);
+    white-space:nowrap;
+  }
+  .ledger td{ padding:.65rem .8rem; border-bottom:1px solid var(--line); vertical-align:top; }
+  .ledger tbody tr:hover{ background:var(--paper); }
+  .ledger .agent-name{ font-family:var(--font-mono); font-size:.85em; color:var(--ink); }
+  .agent-dot{ display:inline-block; width:.5em; height:.5em; border-radius:50%; background:var(--accent); margin-right:.5em; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:.4em; padding:.2em .65em; border-radius:2em;
+    font-size:.75rem; font-weight:700;
+  }
+  .pill::before{ content:''; width:.45em; height:.45em; border-radius:50%; background:currentColor; }
+  .pill--ok{ background:var(--ok-soft); color:var(--ok); }
+  .pill--warn{ background:var(--warn-soft); color:var(--warn); }
+
+  .btn-row{ display:flex; gap:.75rem; margin-top:1.25rem; flex-wrap:wrap; }
+  .btn{
+    font:600 .8125rem/1 var(--font-body); padding:.6em 1.15em; border-radius:3px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+  }
+  .btn--approve{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .btn--reject{ background:transparent; color:var(--ink-soft); }
+  .btn--ghost{ background:transparent; border-color:transparent; color:var(--accent); text-decoration:underline; text-underline-offset:.2em; }
+
+  .split{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); margin:1.5rem 0 2rem; max-width:none;
+  }
+  .split > div{ background:var(--surface); padding:1.25rem 1.4rem; }
+  .split h3{ margin:0 0 .75rem; font-size:.8125rem; text-transform:uppercase; letter-spacing:.06em;
+    font-family:var(--font-mono); color:var(--muted); }
+  .split .accent h3{ color:var(--accent); }
+
+  .principles{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); margin:1.5rem 0 2rem; max-width:none;
+  }
+  .principles > div{ background:var(--surface); padding:1.4rem; }
+  .principles h3{ margin:0 0 .5em; }
+  .principles p{ margin:0; max-width:none; font-size:.9375rem; color:var(--ink-soft); }
+
+  .manual{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.25rem 1.5rem;
+    margin:1.5rem 0 2rem; max-width:none;
+  }
+  .manual > div{ border-top:2px solid var(--ink); padding-top:.6rem; }
+  .manual h3{
+    margin:0 0 .5em; font:700 .8125rem var(--font-mono); text-transform:uppercase;
+    letter-spacing:.06em; color:var(--ink);
+  }
+  .manual ul{ margin:0; padding-left:1.1em; max-width:none; font-size:.875rem; color:var(--ink-soft); }
+  .manual li{ margin-bottom:.3em; }
+
+  .audit-record{
+    display:grid; grid-template-columns:9rem 1fr; margin:1.5rem 0 2rem; max-width:34rem;
+    border:1px solid var(--line); border-radius:4px; overflow:hidden;
+  }
+  .audit-record dt,.audit-record dd{ padding:.6rem .9rem; border-top:1px solid var(--line); margin:0; }
+  .audit-record dt:nth-of-type(1),.audit-record dd:nth-of-type(1){ border-top:none; }
+  .audit-record dt{
+    font:600 var(--fs-caption) var(--font-mono); text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); background:var(--paper);
+  }
+  .audit-record dd{ font-size:.875rem; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .audit-record code{ font-family:var(--font-mono); font-size:.9em; color:var(--accent); }
+
+  .roadmap{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); margin:1.5rem 0 2rem; max-width:none;
+  }
+  .roadmap > div{ background:var(--surface); padding:1.25rem; }
+  .roadmap h3{
+    margin:0 0 .8rem; font:700 .75rem var(--font-mono); text-transform:uppercase;
+    letter-spacing:.07em; color:var(--accent);
+  }
+  .roadmap ul{ margin:0; padding-left:1.1em; font-size:.875rem; max-width:none; }
+
+  .checklist{ list-style:none; margin:1.25rem 0; padding:0; columns:2 220px; column-gap:2rem; max-width:none; }
+  .checklist li{
+    display:flex; gap:.6em; break-inside:avoid; margin-bottom:.7em; font-size:.9375rem; color:var(--ink-soft);
+  }
+  .checklist li::before{ content:'✓'; color:var(--ok); font-weight:700; flex-shrink:0; }
+
+  .doc-footer{
+    margin-top:2rem; padding-top:2rem; border-top:1px solid var(--line);
+    font-size:.8125rem; color:var(--muted);
+  }
+
+  @media (max-width:900px){
+    .layout{ grid-template-columns:1fr; padding:2rem 1.25rem 4rem; gap:1.5rem; }
+    .docket{ position:sticky; top:0; background:var(--paper); z-index:10; padding:.75rem 0; margin:0 -1.25rem; padding-inline:1.25rem; border-bottom:1px solid var(--line); }
+    .docket ol{ display:flex; overflow-x:auto; gap:.25rem; scrollbar-width:thin; }
+    .docket li{ flex:none; }
+    .docket a{ white-space:nowrap; border-left:none; border-bottom:2px solid transparent; }
+    .docket a.is-active{ border-left:none; border-bottom-color:var(--accent); }
+  }
+
+  @media print{
+    .docket{ display:none; }
+    .layout{ grid-template-columns:1fr; max-width:none; }
+    .screen, .arch, .split, .principles, .manual, .roadmap{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+
+  <header class="masthead">
+    <p class="kicker">Crux Plugin · Product Design Document</p>
+    <h1>Vision &amp; High-Level Design</h1>
+    <dl class="meta-strip">
+      <div><dt>Version</dt><dd>1.0</dd></div>
+      <div><dt>Status</dt><dd><span class="pill pill--warn">Draft</span></dd></div>
+      <div><dt>Product</dt><dd>Crux AI for Redmine / Redmineflux</dd></div>
+    </dl>
+  </header>
+
+  <nav class="docket" aria-label="Table of contents">
+    <ol>
+      <li><a href="#s1"><span class="num">01</span>Vision</a></li>
+      <li><a href="#s2"><span class="num">02</span>Problem Statement</a></li>
+      <li><a href="#s3"><span class="num">03</span>Product Goal</a></li>
+      <li><a href="#s4"><span class="num">04</span>Core Principles</a></li>
+      <li><a href="#s5"><span class="num">05</span>Product Architecture</a></li>
+      <li><a href="#s6"><span class="num">06</span>Installation Experience</a></li>
+      <li><a href="#s7"><span class="num">07</span>Project Module</a></li>
+      <li><a href="#s8"><span class="num">08</span>Crux Workspace</a></li>
+      <li><a href="#s9"><span class="num">09</span>Chat Experience</a></li>
+      <li><a href="#s10"><span class="num">10</span>Conversation Lifecycle</a></li>
+      <li><a href="#s11"><span class="num">11</span>Approval Workflow</a></li>
+      <li><a href="#s12"><span class="num">12</span>AI Agents</a></li>
+      <li><a href="#s13"><span class="num">13</span>Administration</a></li>
+      <li><a href="#s14"><span class="num">14</span>Project Dashboard</a></li>
+      <li><a href="#s15"><span class="num">15</span>Knowledge Sources</a></li>
+      <li><a href="#s16"><span class="num">16</span>Integrations</a></li>
+      <li><a href="#s17"><span class="num">17</span>Pending Actions</a></li>
+      <li><a href="#s18"><span class="num">18</span>Audit Trail</a></li>
+      <li><a href="#s19"><span class="num">19</span>Future Roadmap</a></li>
+      <li><a href="#s20"><span class="num">20</span>Success Metrics</a></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+
+    <section id="s1" class="art">
+      <div class="art-head"><span class="art-num">01</span><h2>Vision</h2></div>
+      <h3>Mission</h3>
+      <p class="lede">Transform Redmine from a traditional project management system into an AI-native collaboration platform where humans and AI agents work together as a single team.</p>
+      <p>Instead of AI being a chatbot, Crux embeds intelligent agents directly into project workflows, allowing users to create, plan, develop, test, document, review, and manage software through natural conversation — while maintaining complete governance, approvals, and auditability.</p>
+    </section>
+
+    <section id="s2" class="art">
+      <div class="art-head"><span class="art-num">02</span><h2>Problem Statement</h2></div>
+      <p>Today's project management tools require users to manually perform many repetitive tasks. Existing AI assistants help answer questions but do not participate as governed members of a project team.</p>
+      <div class="split">
+        <div>
+          <h3>Done manually today</h3>
+          <ul>
+            <li>Creating projects</li>
+            <li>Breaking requirements into issues</li>
+            <li>Sprint planning</li>
+            <li>Writing documentation</li>
+            <li>Creating test cases</li>
+            <li>Status reporting</li>
+            <li>Assigning issues</li>
+            <li>Reviewing project health</li>
+          </ul>
+        </div>
+        <div class="accent">
+          <h3>What organizations need</h3>
+          <ul>
+            <li>Understands project context</li>
+            <li>Collaborates with users</li>
+            <li>Executes approved work</li>
+            <li>Operates under permissions</li>
+            <li>Maintains complete audit history</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="s3" class="art">
+      <div class="art-head"><span class="art-num">03</span><h2>Product Goal</h2></div>
+      <p>Crux introduces AI Agents as first-class members of Redmine projects. Users interact through conversational AI — instead of navigating multiple pages and forms, they simply describe what they need.</p>
+      <p class="prompt-bubble">&ldquo;Create a CRM System with Customer, Leads, and Invoice modules.&rdquo;</p>
+      <p>Crux then:</p>
+      <ol>
+        <li>Understands the request</li>
+        <li>Asks clarification questions</li>
+        <li>Prepares an execution plan</li>
+        <li>Waits for approval</li>
+        <li>Creates the project</li>
+        <li>Generates a roadmap</li>
+        <li>Creates issues</li>
+        <li>Assigns users</li>
+        <li>Generates documentation</li>
+      </ol>
+    </section>
+
+    <section id="s4" class="art">
+      <div class="art-head"><span class="art-num">04</span><h2>Core Principles</h2></div>
+      <div class="principles">
+        <div>
+          <h3>Human in Control</h3>
+          <p>AI never performs major actions without user approval. Every important action requires confirmation.</p>
+        </div>
+        <div>
+          <h3>Conversation First</h3>
+          <p>Natural language becomes the primary interaction model. Users describe outcomes instead of navigating complex forms.</p>
+        </div>
+        <div>
+          <h3>Governance</h3>
+          <p>Every AI action is permission checked, approved, logged, and auditable.</p>
+        </div>
+        <div>
+          <h3>Modular</h3>
+          <p>Each project chooses which agents are enabled, which knowledge sources AI can access, and which integrations are active.</p>
+        </div>
+        <div>
+          <h3>Secure</h3>
+          <p>AI only accesses data that the current user is authorized to view.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="s5" class="art">
+      <div class="art-head"><span class="art-num">05</span><h2>Product Architecture</h2></div>
+      <p>Crux runs as a plugin inside Redmine, sitting alongside existing modules and exposing nine internal engines that power the AI workspace.</p>
+      <div class="arch">
+        <span class="arch-tag">Redmine</span>
+        <div class="arch-modules chip-row">
+          <span class="chip">Projects</span><span class="chip">Issues</span><span class="chip">Wiki</span>
+          <span class="chip">Repository</span><span class="chip">Files</span><span class="chip">Documents</span>
+        </div>
+        <div class="arch-plugin">
+          <span class="arch-tag arch-tag--accent">Crux Plugin</span>
+          <div class="arch-engines chip-row">
+            <span class="chip chip--accent">Chat Engine</span>
+            <span class="chip chip--accent">Agent Engine</span>
+            <span class="chip chip--accent">Workflow Engine</span>
+            <span class="chip chip--accent">Knowledge Engine</span>
+            <span class="chip chip--accent">Approval Engine</span>
+            <span class="chip chip--accent">Run Ledger</span>
+            <span class="chip chip--accent">Billing Engine</span>
+            <span class="chip chip--accent">Integration Engine</span>
+            <span class="chip chip--accent">Administration</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s6" class="art">
+      <div class="art-head"><span class="art-num">06</span><h2>Installation Experience</h2></div>
+      <p>After installing the plugin, the administrator configures Crux centrally:</p>
+      <div class="crumbs">Administration <span class="sep">›</span> Plugins <span class="sep">›</span> <span class="current">Crux</span></div>
+      <ul>
+        <li>AI Provider</li>
+        <li>Models</li>
+        <li>Billing</li>
+        <li>Default Agents</li>
+        <li>Integrations</li>
+      </ul>
+      <p><strong>No project uses Crux until it is explicitly enabled.</strong></p>
+    </section>
+
+    <section id="s7" class="art">
+      <div class="art-head"><span class="art-num">07</span><h2>Project Module</h2></div>
+      <p>Each project receives a new, opt-in module:</p>
+      <div class="crumbs">Project Settings <span class="sep">›</span> Modules <span class="sep">›</span> <span class="current">☐ Crux AI</span></div>
+      <p>If enabled, the project menu displays:</p>
+      <div class="chip-row">
+        <span class="chip">Overview</span><span class="chip">Activity</span><span class="chip">Issues</span>
+        <span class="chip">Wiki</span><span class="chip">Repository</span><span class="chip chip--accent">Crux</span>
+      </div>
+    </section>
+
+    <section id="s8" class="art">
+      <div class="art-head"><span class="art-num">08</span><h2>Crux Workspace</h2></div>
+      <p>The Crux page is the central AI workspace for a project, organized into tabs.</p>
+      <div class="screen">
+        <div class="screen__bar"><span class="screen__dot"></span><span class="screen__title">Project · Crux Workspace</span></div>
+        <div class="screen__body">
+          <nav class="tabbar">
+            <a href="#" class="active">Overview</a>
+            <a href="#">Chat</a>
+            <a href="#">Agents</a>
+            <a href="#">Runs</a>
+            <a href="#">Knowledge</a>
+            <a href="#">Automations</a>
+            <a href="#">Settings</a>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <section id="s9" class="art">
+      <div class="art-head"><span class="art-num">09</span><h2>Chat Experience</h2></div>
+      <p>Users communicate naturally:</p>
+      <p class="prompt-bubble">&ldquo;Create a Hospital Management System.&rdquo;</p>
+      <p>Crux performs:</p>
+      <ol class="stepper">
+        <li>Intent Detection</li>
+        <li>Requirement Analysis</li>
+        <li>Clarification Questions</li>
+        <li>Execution Plan</li>
+        <li>Approval</li>
+        <li>Execution</li>
+        <li>Completion</li>
+      </ol>
+    </section>
+
+    <section id="s10" class="art">
+      <div class="art-head"><span class="art-num">10</span><h2>Conversation Lifecycle</h2></div>
+      <ol class="stepper">
+        <li>User Prompt</li>
+        <li>Intent Detection</li>
+        <li>Context Retrieval</li>
+        <li>
+          Need Clarification?
+          <div class="branch"><strong>Yes →</strong> Ask Questions → Receive Answers, then continue below.</div>
+        </li>
+        <li>Generate Execution Plan</li>
+        <li>Preview</li>
+        <li>User Approval</li>
+        <li>Execute Tasks</li>
+        <li>Generate Results</li>
+        <li>Audit Log</li>
+      </ol>
+    </section>
+
+    <section id="s11" class="art">
+      <div class="art-head"><span class="art-num">11</span><h2>Approval Workflow</h2></div>
+      <p>Before execution, Crux always shows an execution plan for review.</p>
+      <div class="screen">
+        <div class="screen__bar"><span class="screen__dot"></span><span class="screen__title">Execution Plan · Preview</span></div>
+        <div class="screen__body">
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead><tr><th>Action</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Create Project</td><td><span class="pill pill--ok">Ready</span></td></tr>
+                <tr><td>Create Versions</td><td><span class="pill pill--ok">Ready</span></td></tr>
+                <tr><td>Create Milestones</td><td><span class="pill pill--ok">Ready</span></td></tr>
+                <tr><td>Generate Wiki</td><td><span class="pill pill--ok">Ready</span></td></tr>
+                <tr><td>Create 42 Issues</td><td><span class="pill pill--ok">Ready</span></td></tr>
+                <tr><td>Assign Users</td><td><span class="pill pill--ok">Ready</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn--approve">Approve</button>
+            <button type="button" class="btn btn--reject">Reject</button>
+            <button type="button" class="btn btn--ghost">Edit Plan</button>
+          </div>
+        </div>
+      </div>
+      <p><strong>Only after approval does execution begin.</strong></p>
+    </section>
+
+    <section id="s12" class="art">
+      <div class="art-head"><span class="art-num">12</span><h2>AI Agents</h2></div>
+      <p>Initial bundled agents and their mandates:</p>
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead><tr><th>Agent</th><th>Mandate</th></tr></thead>
+          <tbody>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">Planner</span></td><td>Creates roadmap and work breakdown.</td></tr>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">Requirement Analyst</span></td><td>Converts user ideas into specifications.</td></tr>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">Developer</span></td><td>Generates implementation guidance.</td></tr>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">QA Agent</span></td><td>Creates test cases; finds missing scenarios.</td></tr>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">Documentation Agent</span></td><td>Creates wiki pages, technical documentation, release notes.</td></tr>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">Reporter</span></td><td>Standups, project summaries, sprint reports.</td></tr>
+            <tr><td><span class="agent-dot"></span><span class="agent-name">DevOps Agent</span></td><td>Deployment guidance, environment validation, CI/CD assistance.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="s13" class="art">
+      <div class="art-head"><span class="art-num">13</span><h2>Administration</h2></div>
+      <p>Administration contains a dedicated Crux section, organized as follows.</p>
+      <div class="manual">
+        <div>
+          <h3>Dashboard</h3>
+          <ul><li>Projects</li><li>AI Runs</li><li>Outcomes</li><li>Token Usage</li><li>Estimated Cost</li><li>Active Agents</li><li>Top Projects</li></ul>
+        </div>
+        <div>
+          <h3>Agents</h3>
+          <ul><li>Enable / Disable</li><li>Configure Prompt</li><li>Choose Model</li><li>Permissions</li><li>Temperature</li><li>Limits</li></ul>
+        </div>
+        <div>
+          <h3>Providers</h3>
+          <ul><li>OpenAI</li><li>Anthropic</li><li>Gemini</li><li>Azure OpenAI</li><li>Ollama</li><li>Mock Provider</li></ul>
+        </div>
+        <div>
+          <h3>Models</h3>
+          <ul><li>Default model</li><li>Fallback model</li><li>Context limits</li><li>Temperature</li></ul>
+        </div>
+        <div>
+          <h3>Audit Logs</h3>
+          <ul><li>Every AI action</li><li>Searchable</li><li>Filterable</li><li>Exportable</li></ul>
+        </div>
+        <div>
+          <h3>Billing</h3>
+          <ul><li>Current subscription</li><li>Outcome usage</li><li>Token usage</li><li>Monthly consumption</li><li>Historical usage</li></ul>
+        </div>
+        <div>
+          <h3>Integrations</h3>
+          <ul><li>GitHub</li><li>GitLab</li><li>Slack</li><li>Microsoft Teams</li><li>Jira Migration</li><li>Webhook</li><li>Email</li></ul>
+        </div>
+        <div>
+          <h3>Settings</h3>
+          <ul><li>Default Agents</li><li>Approval Policies</li><li>Knowledge Sources</li><li>Rate Limits</li><li>Security</li><li>Retention</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="s14" class="art">
+      <div class="art-head"><span class="art-num">14</span><h2>Project Dashboard</h2></div>
+      <p>Each project has its own AI dashboard, displaying:</p>
+      <div class="chip-row">
+        <span class="chip">AI Runs</span><span class="chip">Outcomes</span><span class="chip">Success Rate</span>
+        <span class="chip">Token Usage</span><span class="chip">Most Active Agent</span>
+        <span class="chip">Most Used Model</span><span class="chip">Pending Approvals</span>
+      </div>
+    </section>
+
+    <section id="s15" class="art">
+      <div class="art-head"><span class="art-num">15</span><h2>Knowledge Sources</h2></div>
+      <p>The project administrator chooses which sources AI may access:</p>
+      <div class="chip-row">
+        <span class="chip">Issues</span><span class="chip">Wiki</span><span class="chip">Repository</span>
+        <span class="chip">Files</span><span class="chip">Documents</span><span class="chip">News</span>
+        <span class="chip">Time Entries</span><span class="chip">Custom Fields</span>
+        <span class="chip">Helpdesk</span><span class="chip">CRM</span>
+      </div>
+    </section>
+
+    <section id="s16" class="art">
+      <div class="art-head"><span class="art-num">16</span><h2>Integrations</h2></div>
+      <p>At the project level:</p>
+      <div class="chip-row">
+        <span class="chip">GitHub Repository</span><span class="chip">Slack Channel</span>
+        <span class="chip">Teams Channel</span><span class="chip">Webhook</span><span class="chip">CI/CD</span>
+      </div>
+    </section>
+
+    <section id="s17" class="art">
+      <div class="art-head"><span class="art-num">17</span><h2>Pending Actions</h2></div>
+      <p>AI never performs destructive operations immediately — every one is queued for a human decision.</p>
+      <div class="screen">
+        <div class="screen__bar"><span class="screen__dot"></span><span class="screen__title">Pending Actions · Queue</span></div>
+        <div class="screen__body">
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead><tr><th>Pending Action</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Project Creation</td><td><span class="pill pill--warn">Waiting Approval</span></td></tr>
+                <tr><td>Issue Generation</td><td><span class="pill pill--warn">Waiting Approval</span></td></tr>
+                <tr><td>Delete Milestone</td><td><span class="pill pill--warn">Waiting Approval</span></td></tr>
+                <tr><td>Deploy</td><td><span class="pill pill--warn">Waiting Approval</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn--approve">Approve</button>
+            <button type="button" class="btn btn--reject">Reject</button>
+            <button type="button" class="btn btn--ghost">Modify</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s18" class="art">
+      <div class="art-head"><span class="art-num">18</span><h2>Audit Trail</h2></div>
+      <p>Every execution stores a complete, immutable record. Example entry:</p>
+      <dl class="audit-record">
+        <dt>User</dt><dd><code>sheetal.sharma@zehntech.com</code></dd>
+        <dt>Agent</dt><dd>Planner</dd>
+        <dt>Model</dt><dd><code>claude-sonnet-5</code></dd>
+        <dt>Provider</dt><dd>Anthropic</dd>
+        <dt>Prompt</dt><dd>&ldquo;Create a CRM System with Customer, Leads, and Invoice modules.&rdquo;</dd>
+        <dt>Context</dt><dd>Project knowledge sources: Issues, Wiki</dd>
+        <dt>Execution Time</dt><dd>4.2s</dd>
+        <dt>Cost</dt><dd>$0.018</dd>
+        <dt>Tokens</dt><dd>3,214</dd>
+        <dt>Output</dt><dd>Created 3 modules, 42 issues</dd>
+        <dt>Approval</dt><dd><span class="pill pill--ok">Approved</span></dd>
+        <dt>Timestamp</dt><dd>2026-07-07 14:32 UTC</dd>
+      </dl>
+    </section>
+
+    <section id="s19" class="art">
+      <div class="art-head"><span class="art-num">19</span><h2>Future Roadmap</h2></div>
+      <div class="roadmap">
+        <div>
+          <h3>Phase 1</h3>
+          <ul><li>Chat</li><li>Project Creation</li><li>Issue Creation</li><li>Planning</li><li>Approval Workflow</li></ul>
+        </div>
+        <div>
+          <h3>Phase 2</h3>
+          <ul><li>Agent Collaboration</li><li>Multiple AI Providers</li><li>GitHub Integration</li><li>Slack Integration</li></ul>
+        </div>
+        <div>
+          <h3>Phase 3</h3>
+          <ul><li>Automated Sprint Planning</li><li>Code Review</li><li>Test Generation</li><li>Knowledge Search</li></ul>
+        </div>
+        <div>
+          <h3>Phase 4</h3>
+          <ul><li>Multi-Agent Workflows</li><li>MCP Support</li><li>Custom Agents</li><li>Marketplace</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="s20" class="art">
+      <div class="art-head"><span class="art-num">20</span><h2>Success Metrics</h2></div>
+      <p>The Crux plugin is considered successful when users can:</p>
+      <ul class="checklist">
+        <li>Create complete projects using conversation.</li>
+        <li>Generate requirements and issue hierarchies with AI.</li>
+        <li>Approve AI-generated execution plans before changes are applied.</li>
+        <li>Use specialized agents (Planner, QA, Documentation, DevOps, etc.) within projects.</li>
+        <li>Review all AI actions through audit logs and dashboards.</li>
+        <li>Integrate AI workflows with external tools such as GitHub, Slack, and Microsoft Teams.</li>
+        <li>Scale from simple assistance to governed multi-agent collaboration while preserving Redmine's permissions and project-based architecture.</li>
+      </ul>
+    </section>
+
+    <footer class="doc-footer">
+      Crux Plugin — Vision &amp; High-Level Design Document · v1.0 · Draft
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.docket a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  if(!('IntersectionObserver' in window)) return;
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var idx = sections.indexOf(entry.target);
+      if(idx === -1) return;
+      if(entry.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('is-active'); });
+        links[idx].classList.add('is-active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function(s){ if(s) observer.observe(s); });
+})();
+</script>
+</body>
+</html>

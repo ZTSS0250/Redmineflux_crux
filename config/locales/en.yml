@@ -1,0 +1,17 @@
+# English strings go here for Rails i18n
+en:
+  crux:
+    label_crux_ai_tab: "Crux"
+    label_global_crux: "Crux"
+    label_chat: "Chat"
+    label_chat_placeholder: "Type a message…"
+    label_chat_send: "Send"
+    label_dashboard: "Dashboard"
+    label_agents: "Agents"
+    label_agent: "Agent"
+    label_audit: "Audit Logs"
+    label_billing: "Billing"
+    label_providers: "Providers"
+    label_settings: "Settings"
+    label_setting: "Settings"
+    label_coming_soon: "Coming soon."

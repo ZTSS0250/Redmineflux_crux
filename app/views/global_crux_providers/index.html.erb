@@ -1,0 +1,29 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_providers, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Provider</th><th>Status</th><th>Default Model</th></tr></thead>
+  <tbody>
+    <% @providers.each do |provider| %>
+      <tr>
+        <td><%= provider[:name] %></td>
+        <td>
+          <% case provider[:status]
+             when 'connected' %>
+            <span class="crux-badge crux-badge-success">Connected</span>
+          <% when 'dev_only' %>
+            <span class="crux-badge crux-badge-info">Connected (dev/test only)</span>
+          <% else %>
+            <span class="crux-badge crux-badge-muted">Not configured</span>
+          <% end %>
+        </td>
+        <td><%= provider[:model] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
