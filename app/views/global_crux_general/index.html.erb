@@ -1,0 +1,33 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_general, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Field</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td><%= @plugin_info[:name] %></td>
+    </tr>
+    <tr>
+      <td>Version</td>
+      <td><%= @plugin_info[:version] %></td>
+    </tr>
+    <tr>
+      <td>Author</td>
+      <td><%= @plugin_info[:author] %></td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td><%= @plugin_info[:description] %></td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td><%= link_to @plugin_info[:url], @plugin_info[:url] %></td>
+    </tr>
+  </tbody>
+</table>

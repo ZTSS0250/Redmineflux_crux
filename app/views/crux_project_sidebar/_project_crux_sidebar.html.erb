@@ -38,11 +38,46 @@
   <% end %>
 </div>
 
-<div title="<%= l(:label_billing, :scope => :crux) %>" class="sidebar-crux-billing">
-  <%= link_to project_crux_billing_path(@project), class: 'btn-crux-billing', id: 'btn-crux-billing' do %>
+<div title="<%= l(:label_runs, :scope => :crux) %>" class="sidebar-crux-runs">
+  <%= link_to project_crux_runs_path(@project), class: 'btn-crux-runs', id: 'btn-crux-runs' do %>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-      <line x1="1" y1="10" x2="23" y2="10"/>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+  <% end %>
+</div>
+
+<div title="<%= l(:label_knowledge, :scope => :crux) %>" class="sidebar-crux-knowledge">
+  <%= link_to project_crux_knowledge_path(@project), class: 'btn-crux-knowledge', id: 'btn-crux-knowledge' do %>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+  <% end %>
+</div>
+
+<div title="<%= l(:label_automations, :scope => :crux) %>" class="sidebar-crux-automations">
+  <%= link_to project_crux_automations_path(@project), class: 'btn-crux-automations', id: 'btn-crux-automations' do %>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  <% end %>
+</div>
+
+<div title="<%= l(:label_pending_actions, :scope => :crux) %>" class="sidebar-crux-pending-actions">
+  <%= link_to project_crux_pending_actions_path(@project), class: 'btn-crux-pending-actions', id: 'btn-crux-pending-actions' do %>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  <% end %>
+</div>
+
+<div title="<%= l(:label_analytics, :scope => :crux) %>" class="sidebar-crux-analytics">
+  <%= link_to project_crux_analytics_path(@project), class: 'btn-crux-analytics', id: 'btn-crux-analytics' do %>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/>
+      <line x1="12" y1="20" x2="12" y2="4"/>
+      <line x1="6" y1="20" x2="6" y2="14"/>
     </svg>
   <% end %>
 </div>
@@ -55,5 +90,3 @@
     </svg>
   <% end %>
 </div>
-
-

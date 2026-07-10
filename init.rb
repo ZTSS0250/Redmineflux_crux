@@ -17,13 +17,35 @@ Redmine::Plugin.register :redmineflux_crux do
   url 'https://www.redmineflux.com/plugins/crux'
   author_url 'https://www.zehntech.com'
 
+  # Canonical project-scoped permission set (security.md / glossary.md).
+  # Global crux:administer is intentionally NOT declared here — Administration
+  # → Crux controllers gate on Redmine's own `require_admin` (User#admin?),
+  # matching the site-wide "Administrator" concept rather than a project role.
   project_module :crux_ai do
-    permission :view_crux_ai,
+    permission :use_crux,
                :project_crux => [:index],
                :project_crux_chat => [:index],
                :project_crux_agents => [:index],
-               :project_crux_billing => [:index],
+               :project_crux_runs => [:index],
                :project_crux_settings => [:index]
+
+    permission :crux_approve,
+               :project_crux_pending_actions => [:index]
+
+    permission :crux_approve_destructive, {}
+
+    permission :crux_manage_agents, {}
+
+    permission :crux_manage_knowledge,
+               :project_crux_knowledge => [:index]
+
+    permission :crux_manage_integrations,
+               :project_crux_automations => [:index]
+
+    permission :crux_view_billing, {}
+
+    permission :crux_view_analytics,
+               :project_crux_analytics => [:index]
   end
 
   menu :project_menu, :crux_ai,

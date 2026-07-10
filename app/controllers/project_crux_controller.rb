@@ -1,5 +1,5 @@
 class ProjectCruxController < ApplicationController
-  before_action :find_project
+  include CruxProjectScoped
   before_action :authorize
 
   def index
@@ -18,13 +18,5 @@ class ProjectCruxController < ApplicationController
       { text: 'QA Agent generated 12 test cases for #2031', at: '1d ago' },
       { text: 'DevOps Agent flagged environment drift', at: '2d ago' }
     ]
-  end
-
-  private
-
-  def find_project
-    @project = Project.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render_404
   end
 end

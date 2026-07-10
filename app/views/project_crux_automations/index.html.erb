@@ -1,0 +1,12 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_project_sidebar/project_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_automations, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<div class="crux-empty-state">
+  <p><%= l(:label_coming_soon, :scope => :crux) %></p>
+  <p>Connect GitHub, Slack, and other integrations here in a future phase.</p>
+</div>

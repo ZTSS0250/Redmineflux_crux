@@ -1,0 +1,28 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_project_sidebar/project_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_runs, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<% if @runs.empty? %>
+  <div class="crux-empty-state">
+    <p>No runs yet.</p>
+    <p>Start a conversation in Chat to see agent activity here.</p>
+  </div>
+<% else %>
+  <table class="list">
+    <thead><tr><th>Agent</th><th>Action</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody>
+      <% @runs.each do |run| %>
+        <tr>
+          <td><%= run[:agent] %></td>
+          <td><%= run[:action] %></td>
+          <td><%= run[:status] %></td>
+          <td><%= run[:at] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

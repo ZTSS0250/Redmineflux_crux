@@ -88,4 +88,19 @@
   margin-left: 6px;
 }
 
+.crux-empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #777;
+}
+
+.crux-empty-state p {
+  margin: 4px 0;
+}
+
+.crux-empty-state p:first-child {
+  font-weight: 600;
+  color: #444;
+}
+
 

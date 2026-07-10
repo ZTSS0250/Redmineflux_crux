@@ -1,5 +1,5 @@
 class ProjectCruxAgentsController < ApplicationController
-  before_action :find_project
+  include CruxProjectScoped
   before_action :authorize
 
   def index
@@ -12,13 +12,5 @@ class ProjectCruxAgentsController < ApplicationController
       { name: 'Reporter', status: 'enabled', model: 'gpt-4o-mini' },
       { name: 'DevOps Agent', status: 'disabled', model: '—' }
     ]
-  end
-
-  private
-
-  def find_project
-    @project = Project.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render_404
   end
 end

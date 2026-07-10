@@ -1,4 +1,6 @@
 class GlobalCruxController < ApplicationController
+  before_action :require_admin
+
   def show
     @stats = [
       { label: 'Projects', value: '14' },

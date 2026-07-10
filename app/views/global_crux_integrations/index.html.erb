@@ -1,0 +1,19 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_integrations, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Integration</th><th>Status</th></tr></thead>
+  <tbody>
+    <% @integrations.each do |integration| %>
+      <tr>
+        <td><%= integration[:name] %></td>
+        <td><span class="crux-badge crux-badge-muted">Not configured</span></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

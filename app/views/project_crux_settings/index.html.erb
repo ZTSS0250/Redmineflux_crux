@@ -17,3 +17,30 @@
     <% end %>
   </tbody>
 </table>
+
+<% if @show_usage %>
+  <div class="crux-section-title">Usage</div>
+  <p>Plan tier: <span class="crux-badge crux-badge-info"><%= @plan_tier %></span></p>
+
+  <div class="crux-stats">
+    <% @usage_stats.each do |stat| %>
+      <div class="crux-stat-tile">
+        <span class="crux-stat-value"><%= stat[:value] %></span>
+        <span class="crux-stat-label"><%= stat[:label] %></span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="crux-section-title">Cost per Agent</div>
+  <table class="list">
+    <thead><tr><th>Agent</th><th>Cost</th></tr></thead>
+    <tbody>
+      <% @cost_per_agent.each do |agent| %>
+        <tr>
+          <td><%= agent[:name] %></td>
+          <td><%= agent[:cost] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

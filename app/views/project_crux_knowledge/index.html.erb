@@ -1,0 +1,27 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_project_sidebar/project_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_knowledge, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Source</th><th>Status</th><th>Coverage Score</th><th>Last Indexed</th></tr></thead>
+  <tbody>
+    <% @sources.each do |source| %>
+      <tr>
+        <td><%= source[:name] %></td>
+        <td>
+          <% if source[:enabled] %>
+            <span class="crux-badge crux-badge-success">Enabled</span>
+          <% else %>
+            <span class="crux-badge crux-badge-muted">Disabled</span>
+          <% end %>
+        </td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

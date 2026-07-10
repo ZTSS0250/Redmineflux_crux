@@ -1,0 +1,21 @@
+<% content_for :sidebar do %>
+  <%= render 'crux_global_sidebar/global_crux_sidebar' %>
+<% end %>
+<%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+
+<h2><%= l(:label_models, :scope => :crux) %></h2>
+<span class="crux-demo-notice">Demo preview — not live data</span>
+
+<table class="list">
+  <thead><tr><th>Agent</th><th>Model</th><th>Fallback Model</th><th>Temperature</th></tr></thead>
+  <tbody>
+    <% @agent_models.each do |row| %>
+      <tr>
+        <td><%= row[:agent] %></td>
+        <td><%= row[:model] %></td>
+        <td><%= row[:fallback] %></td>
+        <td><%= row[:temperature] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
