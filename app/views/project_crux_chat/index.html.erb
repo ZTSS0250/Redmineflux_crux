@@ -6,8 +6,19 @@
 
 <h2><%= l(:label_chat, :scope => :crux) %></h2>
 
+<%#
+  BUG: data-poll-url must NOT have a .json URL suffix. Redmine's
+  ApplicationController#api_request? treats any request whose
+  params[:format] is literally "json"/"xml" as an API call and skips
+  session-cookie authentication entirely (find_current_user only checks
+  session[:user_id] `unless api_request?`), falling back to API-key auth
+  instead — which this in-browser poll never provides, so it silently
+  became anonymous and 403'd on :authorize. The poll() JS below already
+  sends an `Accept: application/json` header, so format negotiation still
+  picks the JSON branch in the controller without the URL extension.
+%>
 <div class="crux-chat"
-     data-poll-url="<%= project_crux_chat_path(@project, format: :json) %>"
+     data-poll-url="<%= project_crux_chat_path(@project) %>"
      data-send-url="<%= project_crux_chat_messages_path(@project) %>">
   <div class="crux-chat-thread" id="crux-chat-thread">
     <% @conversation.messages.each_with_index do |message, index| %>
