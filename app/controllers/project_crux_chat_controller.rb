@@ -45,7 +45,7 @@ class ProjectCruxChatController < ApplicationController
   def conversation_json(conversation)
     {
       state: conversation.state,
-      messages: conversation.messages.map { |message| message_json(message) }
+      messages: conversation.messages.includes(:agent).map { |message| message_json(message) }
     }
   end
 
@@ -54,6 +54,7 @@ class ProjectCruxChatController < ApplicationController
       id: message.id,
       role: message.role,
       content: message.content,
+      agent_name: message.agent&.name,
       at: view_context.format_time(message.created_at)
     }
   end

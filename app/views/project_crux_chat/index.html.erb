@@ -21,8 +21,9 @@
      data-poll-url="<%= project_crux_chat_path(@project) %>"
      data-send-url="<%= project_crux_chat_messages_path(@project) %>">
   <div class="crux-chat-thread" id="crux-chat-thread">
-    <% @conversation.messages.each_with_index do |message, index| %>
-      <%= render 'message', message: message, is_last: (index == @conversation.messages.size - 1), state: @conversation.state %>
+    <% messages = @conversation.messages.includes(:agent) %>
+    <% messages.each_with_index do |message, index| %>
+      <%= render 'message', message: message, is_last: (index == messages.size - 1), state: @conversation.state %>
     <% end %>
   </div>
 
@@ -83,10 +84,18 @@
       var sender = document.createElement('span');
       sender.className = 'crux-chat-sender';
       sender.textContent = message.role === 'user' ? 'You' : 'Crux';
+      meta.appendChild(sender);
+
+      if (message.agent_name) {
+        var agentBadge = document.createElement('span');
+        agentBadge.className = 'crux-badge crux-badge-info crux-chat-agent-badge';
+        agentBadge.textContent = message.agent_name;
+        meta.appendChild(agentBadge);
+      }
+
       var time = document.createElement('span');
       time.className = 'crux-chat-time';
       time.textContent = message.at;
-      meta.appendChild(sender);
       meta.appendChild(time);
       wrap.appendChild(meta);
 

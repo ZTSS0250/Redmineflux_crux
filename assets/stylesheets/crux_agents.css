@@ -1,0 +1,30 @@
+/* ============================================================
+   redmineflux_crux – Agents tab (global + project) configuration form
+   ============================================================ */
+
+.crux-agent-config-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.crux-agent-config-form label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.crux-agent-config-form input[type="text"],
+.crux-agent-config-form input[type="number"] {
+  font-size: 12px;
+}
+
+.crux-agent-config-form input[type="submit"] {
+  padding: 3px 10px;
+  font-size: 12px;
+}

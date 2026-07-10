@@ -1,6 +1,9 @@
 <div class="crux-chat-message crux-chat-<%= message.role %>" data-message-id="<%= message.id %>">
   <div class="crux-chat-meta">
     <span class="crux-chat-sender"><%= message.role == 'user' ? 'You' : 'Crux' %></span>
+    <% if message.agent %>
+      <span class="crux-badge crux-badge-info crux-chat-agent-badge"><%= message.agent.name %></span>
+    <% end %>
     <span class="crux-chat-time"><%= format_time(message.created_at) %></span>
   </div>
   <% lines = message.content.to_s.split("\n") %>

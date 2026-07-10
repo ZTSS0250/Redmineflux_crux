@@ -3,11 +3,12 @@ module Crux
   # a configurable limit (crux_settings, not a hardcoded constant, per
   # workflow_engine.md's Assumption that this is Administration-configurable).
   #
-  # `execute` is a simulated stub — crx-004's Agent Engine doesn't exist yet,
-  # so there is nothing real to dispatch to. It succeeds unless the step's
-  # payload carries `"simulate_failure" => true`, which only the QA-only
-  # stub_plan_generator ever sets. A future task replaces this method's body
-  # with a real Core Platform/Agent Engine call behind the same call site.
+  # `execute` dispatches to the step's responsible agent via
+  # Crux::RunAgentJob (crx-004's Agent Engine) -- called directly
+  # (`.new.perform`, not `.perform_later`) since RetryManager already runs
+  # inside crx-003's async Crux::ExecutePlanJob and needs execute's
+  # true/false result immediately to decide whether to retry or give up,
+  # which a second queued hop couldn't provide synchronously.
   class RetryManager
     DEFAULT_MAX_ATTEMPTS = 3
 
@@ -32,7 +33,7 @@ module Crux
     end
 
     def self.execute(step)
-      !step.payload['simulate_failure']
+      Crux::RunAgentJob.new.perform(plan_step_id: step.id)
     end
 
     def self.max_attempts_for(_step)

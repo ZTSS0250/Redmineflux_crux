@@ -18,6 +18,9 @@
             <% if step.destructive? %>
               <span class="crux-badge crux-badge-danger" title="Requires the &quot;approve destructive actions&quot; permission">Destructive</span>
             <% end %>
+            <% if (author = step.responsible_agent) %>
+              <span class="crux-badge crux-badge-info"><%= author.name %></span>
+            <% end %>
           </td>
           <td><%= step.target_type %><%= " ##{step.target_id}" if step.target_id %></td>
           <td>

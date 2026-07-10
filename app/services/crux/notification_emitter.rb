@@ -29,6 +29,19 @@ module Crux
       notify_owner(plan, 'run_failed')
     end
 
+    # crx-004 Edge Case #1: both the primary and fallback model failed for a
+    # single agent invocation. Unlike the plan-centric methods above, a
+    # failed Requirement Analyst/Planner hand-off run has no plan yet, so
+    # this notifies against the run itself rather than requiring one.
+    def self.agent_run_failed(run)
+      Crux::Notification.create!(
+        user_id: run.user_id,
+        event_type: 'agent_run_failed',
+        ref_type: 'Crux::Run',
+        ref_id: run.id
+      )
+    end
+
     def self.notify_owner(plan, event_type)
       write!(plan, plan.conversation.user_id, event_type)
     end

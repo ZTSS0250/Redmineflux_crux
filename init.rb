@@ -37,7 +37,8 @@ Redmine::Plugin.register :redmineflux_crux do
 
     permission :crux_approve_destructive, {}
 
-    permission :crux_manage_agents, {}
+    permission :crux_manage_agents,
+               :project_crux_agents => [:update]
 
     permission :crux_manage_knowledge,
                :project_crux_knowledge => [:index]

@@ -2,28 +2,29 @@
   <%= render 'crux_global_sidebar/global_crux_sidebar' %>
 <% end %>
 <%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+<%= stylesheet_link_tag('crux_agents', plugin: 'redmineflux_crux') %>
 
 <h2><%= l(:label_agents, :scope => :crux) %></h2>
-<span class="crux-demo-notice">Demo preview — not live data</span>
 
 <table class="list">
   <thead>
-    <tr><th>Agent</th><th>Category</th><th>Phase</th><th>Status</th><th>Model</th></tr>
+    <tr><th>Agent</th><th>Category</th><th>Phase</th><th>Configuration</th></tr>
   </thead>
   <tbody>
     <% @agents.each do |agent| %>
       <tr>
-        <td><%= agent[:name] %></td>
-        <td><%= agent[:category] %></td>
-        <td><%= agent[:phase] %></td>
+        <td><%= agent.name %></td>
+        <td><%= agent.category %></td>
+        <td><%= agent.phase %></td>
         <td>
-          <% if agent[:status] == 'enabled' %>
-            <span class="crux-badge crux-badge-success">Enabled</span>
-          <% else %>
-            <span class="crux-badge crux-badge-muted">Disabled</span>
+          <%= form_with url: global_crux_agent_path(agent), method: :patch, local: true, html: { class: 'crux-agent-config-form' } do |f| %>
+            <label><%= f.check_box :enabled, checked: agent.enabled? %> Enabled</label>
+            <label>Model <%= f.text_field :model, value: agent.model, size: 14 %></label>
+            <label>Fallback <%= f.text_field :fallback_model, value: agent.fallback_model, size: 14 %></label>
+            <label>Temp <%= f.number_field :temperature, value: agent.temperature, step: 0.1, min: 0, max: 1, size: 4 %></label>
+            <%= f.submit 'Save' %>
           <% end %>
         </td>
-        <td><%= agent[:model] %></td>
       </tr>
     <% end %>
   </tbody>

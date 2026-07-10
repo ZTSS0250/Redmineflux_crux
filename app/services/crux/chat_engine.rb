@@ -36,7 +36,11 @@ module Crux
         ask_clarification(questions)
       else
         @conversation.update!(state: 'planned')
-        append_agent_message('Got it — that has enough detail to plan. This conversation is ready for the next phase to pick up.')
+        # Requirement Analyst -> Planner hand-off (crx-004), replacing the
+        # earlier placeholder message this used to post -- Requirement
+        # Analyst now posts a real chat reply of its own shortly after this
+        # enqueues, so keeping both would just double up.
+        Crux::RunAgentJob.perform_later(conversation_id: @conversation.id)
       end
     end
 
