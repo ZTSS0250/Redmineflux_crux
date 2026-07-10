@@ -1,0 +1,17 @@
+<div class="crux-chat-message crux-chat-<%= message.role %>" data-message-id="<%= message.id %>">
+  <div class="crux-chat-meta">
+    <span class="crux-chat-sender"><%= message.role == 'user' ? 'You' : 'Crux' %></span>
+    <span class="crux-chat-time"><%= format_time(message.created_at) %></span>
+  </div>
+  <% lines = message.content.to_s.split("\n") %>
+  <% if is_last && state == 'clarifying' && message.role == 'agent' && lines.size > 1 %>
+    <div class="crux-chat-bubble"><%= lines.first %></div>
+    <div class="crux-chat-chips">
+      <% lines[1..].each do |question| %>
+        <button type="button" class="crux-chat-chip" data-question="<%= question %>"><%= question %></button>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="crux-chat-bubble"><%= message.content %></div>
+  <% end %>
+</div>

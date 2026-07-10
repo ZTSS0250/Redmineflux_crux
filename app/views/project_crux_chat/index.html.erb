@@ -5,18 +5,13 @@
 <%= stylesheet_link_tag('crux_chat', plugin: 'redmineflux_crux') %>
 
 <h2><%= l(:label_chat, :scope => :crux) %></h2>
-<span class="crux-demo-notice">Demo preview — UI only, not wired to an agent yet</span>
 
-<div class="crux-chat">
+<div class="crux-chat"
+     data-poll-url="<%= project_crux_chat_path(@project, format: :json) %>"
+     data-send-url="<%= project_crux_chat_messages_path(@project) %>">
   <div class="crux-chat-thread" id="crux-chat-thread">
-    <% @messages.each do |msg| %>
-      <div class="crux-chat-message crux-chat-<%= msg[:role] %>">
-        <div class="crux-chat-meta">
-          <span class="crux-chat-sender"><%= msg[:name] %></span>
-          <span class="crux-chat-time"><%= msg[:at] %></span>
-        </div>
-        <div class="crux-chat-bubble"><%= msg[:text] %></div>
-      </div>
+    <% @conversation.messages.each_with_index do |message, index| %>
+      <%= render 'message', message: message, is_last: (index == @conversation.messages.size - 1), state: @conversation.state %>
     <% end %>
   </div>
 
@@ -28,45 +23,161 @@
 
 <script>
   (function() {
+    var root = document.querySelector('.crux-chat');
+    if (!root) { return; }
+
     var thread = document.getElementById('crux-chat-thread');
     var input = document.getElementById('crux-chat-input');
     var sendBtn = document.getElementById('crux-chat-send');
+    var sendUrl = root.getAttribute('data-send-url');
+    var pollUrl = root.getAttribute('data-poll-url');
 
-    function appendMessage(role, sender, text) {
+    var typingEl = null;
+    var pollTimer = null;
+    var lastMessageId = 0;
+
+    Array.prototype.forEach.call(thread.querySelectorAll('[data-message-id]'), function(el) {
+      var id = parseInt(el.getAttribute('data-message-id'), 10);
+      if (id > lastMessageId) { lastMessageId = id; }
+    });
+
+    function csrfToken() {
+      var el = document.querySelector('meta[name="csrf-token"]');
+      return el ? el.getAttribute('content') : null;
+    }
+
+    function attachChipHandlers(el) {
+      Array.prototype.forEach.call(el.querySelectorAll('.crux-chat-chip'), function(chip) {
+        chip.addEventListener('click', function() {
+          var question = chip.getAttribute('data-question');
+          input.value = input.value ? (input.value + ' ' + question) : question;
+          input.focus();
+        });
+      });
+    }
+
+    attachChipHandlers(thread);
+
+    function appendMessage(message) {
+      var id = parseInt(message.id, 10);
+      if (id <= lastMessageId) { return; }
+      lastMessageId = Math.max(lastMessageId, id);
+
       var wrap = document.createElement('div');
-      wrap.className = 'crux-chat-message crux-chat-' + role;
+      wrap.className = 'crux-chat-message crux-chat-' + message.role;
+      wrap.setAttribute('data-message-id', message.id);
 
       var meta = document.createElement('div');
       meta.className = 'crux-chat-meta';
-      meta.innerHTML = '<span class="crux-chat-sender"></span><span class="crux-chat-time">just now</span>';
-      meta.querySelector('.crux-chat-sender').textContent = sender;
+      var sender = document.createElement('span');
+      sender.className = 'crux-chat-sender';
+      sender.textContent = message.role === 'user' ? 'You' : 'Crux';
+      var time = document.createElement('span');
+      time.className = 'crux-chat-time';
+      time.textContent = message.at;
+      meta.appendChild(sender);
+      meta.appendChild(time);
+      wrap.appendChild(meta);
 
+      var lines = message.content.split('\n');
       var bubble = document.createElement('div');
       bubble.className = 'crux-chat-bubble';
-      bubble.textContent = text;
 
-      wrap.appendChild(meta);
-      wrap.appendChild(bubble);
+      if (message.role === 'agent' && lines.length > 1) {
+        bubble.textContent = lines[0];
+        wrap.appendChild(bubble);
+
+        var chips = document.createElement('div');
+        chips.className = 'crux-chat-chips';
+        lines.slice(1).forEach(function(question) {
+          var chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'crux-chat-chip';
+          chip.setAttribute('data-question', question);
+          chip.textContent = question;
+          chips.appendChild(chip);
+        });
+        wrap.appendChild(chips);
+        attachChipHandlers(wrap);
+      } else {
+        bubble.textContent = message.content;
+        wrap.appendChild(bubble);
+      }
+
       thread.appendChild(wrap);
       thread.scrollTop = thread.scrollHeight;
     }
 
-    function sendPrompt() {
-      var text = input.value.trim();
-      if (!text) { return; }
-      appendMessage('user', 'You', text);
-      input.value = '';
+    function setBusy(busy) {
+      input.disabled = busy;
+      sendBtn.disabled = busy;
 
-      window.setTimeout(function() {
-        appendMessage('agent', 'Crux', 'This is a UI preview — chat isn\'t wired to an agent yet.');
-      }, 500);
+      if (busy && !typingEl) {
+        typingEl = document.createElement('div');
+        typingEl.className = 'crux-chat-typing';
+        typingEl.textContent = 'Crux is thinking…';
+        thread.appendChild(typingEl);
+        thread.scrollTop = thread.scrollHeight;
+      } else if (!busy && typingEl) {
+        typingEl.parentNode.removeChild(typingEl);
+        typingEl = null;
+      }
     }
 
-    sendBtn.addEventListener('click', sendPrompt);
+    function poll() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', pollUrl, true);
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.onload = function() {
+        if (xhr.status !== 200) { return; }
+        var data = JSON.parse(xhr.responseText);
+        var newMessages = data.messages.filter(function(m) { return parseInt(m.id, 10) > lastMessageId; });
+
+        if (newMessages.length > 0) {
+          newMessages.forEach(appendMessage);
+          setBusy(false);
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      };
+      xhr.onerror = function() { setBusy(false); };
+      xhr.send();
+    }
+
+    function sendMessage() {
+      var text = input.value.trim();
+      if (!text) { return; }
+
+      setBusy(true);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', sendUrl, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.setRequestHeader('Accept', 'application/json');
+      var token = csrfToken();
+      if (token) { xhr.setRequestHeader('X-CSRF-Token', token); }
+
+      xhr.onload = function() {
+        if (xhr.status !== 200) {
+          setBusy(false);
+          return;
+        }
+        var data = JSON.parse(xhr.responseText);
+        appendMessage(data.message);
+        input.value = '';
+
+        if (pollTimer) { clearInterval(pollTimer); }
+        pollTimer = setInterval(poll, 1500);
+      };
+      xhr.onerror = function() { setBusy(false); };
+      xhr.send('content=' + encodeURIComponent(text));
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        sendPrompt();
+        sendMessage();
       }
     });
   })();

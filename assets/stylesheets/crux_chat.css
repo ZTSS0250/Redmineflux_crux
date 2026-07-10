@@ -89,3 +89,37 @@
 .crux-chat-send-btn:hover {
   background: rgb(0, 128, 225);
 }
+
+.crux-chat-composer input:disabled,
+.crux-chat-composer button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.crux-chat-chips {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.crux-chat-chip {
+  padding: 4px 10px;
+  border: 1px solid #cfe4f5;
+  border-radius: 14px;
+  background: #fff;
+  color: #0f6fb0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.crux-chat-chip:hover {
+  background: #e5f1fa;
+}
+
+.crux-chat-typing {
+  font-size: 12px;
+  font-style: italic;
+  color: #888;
+  padding: 4px 0;
+}

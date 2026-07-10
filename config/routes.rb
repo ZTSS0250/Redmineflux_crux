@@ -16,6 +16,7 @@ get 'crux/license',      to: 'global_crux_license#index',       as: 'global_crux
 # Project Crux
 get 'projects/:id/crux',                 to: 'project_crux#index',                 as: 'project_crux'
 get 'projects/:id/crux/chat',            to: 'project_crux_chat#index',            as: 'project_crux_chat'
+post 'projects/:id/crux/chat/messages',  to: 'project_crux_chat#create_message',   as: 'project_crux_chat_messages'
 get 'projects/:id/crux/agents',          to: 'project_crux_agents#index',          as: 'project_crux_agents'
 get 'projects/:id/crux/runs',            to: 'project_crux_runs#index',            as: 'project_crux_runs'
 get 'projects/:id/crux/knowledge',       to: 'project_crux_knowledge#index',       as: 'project_crux_knowledge'
