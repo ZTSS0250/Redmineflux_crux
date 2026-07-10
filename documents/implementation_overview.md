@@ -10,8 +10,10 @@
 |---|---|---|
 | [crx-001](../backlog/specification/crx-001-feature-plugin-foundation-ui.md) | Plugin Foundation & Initial UI | Plugin registration, permissions, navigation shell, placeholder tabs |
 | [crx-002](../backlog/specification/crx-002-feature-conversation-chat-engine.md) | Conversation/Intent/Clarification/Chat Engine | Real persisted chat, intent classification, clarification loop |
+| [crx-003](../backlog/specification/crx-003-feature-workflow-approval-engine.md) | Workflow Engine, Approval Engine & Notification Engine | Real execution plans/steps, approve/reject/modify, destructive-action gate, baseline notifications |
+| [crx-004](../backlog/specification/crx-004-feature-agent-engine-run-ledger.md) | Agent Engine, 7 GA Agents & Run Ledger | Real agents, Requirement Analyst → Planner hand-off, Mock Provider, append-only Run Ledger |
 
-Everything from crx-003 onward (execution plans, real agents, real model providers, knowledge retrieval, and so on) is specified but **not yet implemented**.
+Everything from crx-005 onward (permission-filtered knowledge retrieval, real AI model providers, multi-agent collaboration, integrations, billing/analytics, and so on) is specified but **not yet implemented**.
 
 ---
 
@@ -94,13 +96,115 @@ Turns the Chat tab from a fake demo (a hardcoded reply after a `setTimeout`) int
 
 ---
 
+## crx-003 — Workflow Engine, Approval Engine & Notification Engine
+
+### What it does
+
+Turns a drafted plan into something a human can approve, reject, or modify — and turns an approved plan into completed (or failed) work, notifying the right people along the way. Before this task, Pending Actions was an empty placeholder tab (crx-001), and no execution plan could exist for real (crx-002 only ever got a conversation to `planned`).
+
+- **Real execution plans and steps**: every plan is a row with one or more steps, each carrying an action type, a target, and its own status.
+- **Approval Engine**: Pending Actions now shows real plans awaiting approval, with per-step Approve/Reject/Modify controls and a plan-level "Approve All"/"Reject."
+- **Two-tier permission gate**: ordinary steps need `crux:approve`; three destructive action types (Delete Project, Delete Milestone, Deploy) additionally need `crux:approve_destructive`. A user holding only the ordinary permission can approve every ordinary step in a mixed plan, leaving just the destructive one waiting for someone else — approval is additive, not all-or-nothing.
+- **Reject/Modify** both send the whole plan back to `planned` for re-drafting, rather than leaving it in a half-approved state.
+- **Execution**: once every step in a plan is approved, it executes step by step in order; a configurable retry count (default 3, adjustable per deployment) applies to each step before it's marked failed and the whole plan reverts to `planned`.
+- **Notifications**: a plan becoming awaiting-approval, approved, rejected, modified, completed, or failed all write a notification record for the relevant people.
+- **QA-only stub plan generator**: a rake task lets a developer manufacture a realistic 7–8 step plan (including one destructive step) against any conversation, for testing the approval/execution flow before a real agent can draft plans — never reachable from the product UI itself.
+
+### How it works, step by step (as an approver)
+
+1. Open a project's Pending Actions tab. If nothing is awaiting approval, an empty state explains that approved/rejected items move to Runs.
+2. Each awaiting plan renders as a card: every step listed with its action, target, current status, and Approve/Reject/Modify buttons. Destructive steps (e.g. "Delete Milestone") are visually flagged, and their Approve button is disabled with an explanatory tooltip unless you hold the stricter destructive-approval permission.
+3. Click "Approve All" to approve every step you're permitted to approve in one action. If a destructive step is in the mix and you don't hold that permission, it's simply skipped — it stays awaiting approval for someone who does.
+4. Once every step in the plan has been approved by someone, the plan itself starts executing, and each step's status pill updates live, in place, with no page reload.
+5. If a step exhausts its retries, the whole plan reverts to `planned` and re-enters the approval queue for another pass.
+6. Rejecting (at the plan or step level) or Modifying a step (currently: reassigning it to a different project member) both send the plan back to `planned`; a Modify naming someone who isn't a project member is refused with an explanation rather than silently accepted.
+
+### How it works internally, step by step (technical)
+
+1. A single service (`WorkflowEngine`) owns every plan/step state transition; each transition is a database-level compare-and-swap (`update ... where status = X`), so two concurrent Approve clicks on the same plan can never both "win."
+2. Approve is additive: it marks every `awaiting_approval` step the caller is permitted to approve, and only flips the plan to `executing` once nothing is left awaiting approval.
+3. A single, centralized permission check (`ApprovalGate`) is the only place destructive-vs-ordinary approval is decided — never duplicated per controller action.
+4. Once `executing`, a background job walks the plan's approved steps in order; each step goes through a retry manager that tracks its attempt count against a configurable maximum before giving up.
+5. A notification is written on every plan-level transition — approvers are notified when a plan needs review, the conversation's owner on every transition after that.
+6. Pending Actions and its approve/reject/modify actions are pure AJAX: a click sends a request that returns JSON, and the browser patches just the affected status pill and disables just the relevant buttons — approving one step never reloads or disturbs the rest of the page.
+
+### Data model introduced
+
+| Table | Columns |
+|---|---|
+| `crux_settings` | `id`, `key`, `value`, `scope` (global/project), `project_id` |
+| `crux_execution_plans` | `id`, `conversation_id`, `status`, `estimated_time`, `estimated_cost`, `approved_by`, `approved_at` |
+| `crux_plan_steps` | `id`, `plan_id`, `action_type`, `target_type`, `target_id`, `status`, `payload`, `attempts`, `error_message` |
+| `crux_notifications` | `id`, `user_id`, `event_type`, `ref_type`, `ref_id`, `read_at`, `created_at` |
+
+### What's deliberately not in this task
+
+- Nothing actually creates real Redmine objects yet — a step's execution is still simulated; a real agent actually dispatching to one arrives in crx-004 and beyond.
+- No real agent drafts these plans yet — before crx-004, the only way a plan exists at all is the QA-only rake task, never the product UI.
+- The Notification Engine here is a baseline: notification records are written, but nothing renders a bell-icon notification center yet.
+
+---
+
+## crx-004 — Agent Engine, 7 GA Agents & Run Ledger
+
+### What it does
+
+Gives conversations and execution plans an actual author and executor. Before this task, reaching `planned` (crx-002) just posted a canned "ready for the next phase" message, and the only way a plan ever existed was crx-003's QA-only stub generator.
+
+- **All 12 catalog agents are real, configurable rows** — the 7 GA agents (Requirement Analyst, Planner, Developer, QA Agent, Documentation Agent, Reporter, DevOps Agent) enabled by default; the 5 Phase 2/3 agents (Security Agent, Code Reviewer, Product Owner Agent, Scrum Master Agent, Release Manager Agent) present in the catalog but disabled until their own task builds real behavior for them.
+- **Requirement Analyst → Planner hand-off**: once a conversation has enough detail to plan, Requirement Analyst posts a real structured-requirements reply, then Planner drafts and submits a real execution plan for approval — replacing crx-003's stub generator for actual conversations.
+- **Mock Provider**: a deterministic, canned-response model — one of the product's own canonical providers, not a placeholder hack — so every agent can be exercised and QA'd without any external API key. Each of the 12 roles has its own canned response; Planner's is the exact canonical 7-step plan (Create Project · Generate Wiki · Create Versions · Generate Milestones · Create 84 Issues · Assign Users · Generate Documentation).
+- **Run Ledger**: every agent invocation — successful or failed — writes a permanent, append-only record (who ran it, which agent, which model, token counts, what it produced). A billable outcome record is additionally created only when the run represents a real, already-approved deliverable — never for an ordinary chat reply.
+- **Fallback models**: if an agent's primary model fails, it retries once against its configured fallback model, and the run record shows which model actually produced the result, so a silent quality change never goes unnoticed.
+- **Agents tabs now show and edit real data** — model, fallback model, temperature, enabled — instead of a static demo table, in both Administration and each project's own Agents tab. A project can override a specific agent just for itself without affecting any other project; everyone else keeps seeing the global default.
+- **Attribution badges**: every agent-authored chat message and every plan step now shows which agent produced it (e.g. a wiki-page step traces to "Documentation Agent").
+
+### How it works, step by step (as an end user)
+
+1. Open the Chat tab and send a well-specified request, e.g. "Create a CRM System with Customer, Leads, and Invoice modules." (one that doesn't need clarification).
+2. Within a few seconds, a reply from "Requirement Analyst" appears, carrying its own attribution badge, summarizing the captured requirements.
+3. Shortly after, a reply from "Planner" confirms a plan was drafted, and the Pending Actions tab shows a real 7-step plan awaiting your approval — each step tagged with the agent responsible for it (Planner for most steps, Documentation Agent for the wiki-generation step).
+4. Approve the plan as usual (crx-003's flow, unchanged). As each step executes, it dispatches to its responsible agent and completes.
+5. Open Administration → Agents (as a site admin), or a project's own Agents tab: all 12 canonical agents are listed with real enabled/model/fallback/temperature settings; a project admin can override any agent just for their project without touching the global default.
+
+### How it works internally, step by step (technical)
+
+1. Once a conversation reaches `planned` with no existing plan, a background job is enqueued in place of the old placeholder message.
+2. That job resolves the effective Requirement Analyst (a project override if one exists, otherwise the global default) and invokes it through a single shared invocation path; on success, it does the same for Planner.
+3. That shared path is used by every agent, of every kind: it assembles context (project identity, bounded conversation history, detected intent — permission-filtered knowledge retrieval is an explicit seam left for a later task), calls the Mock Provider with the agent's primary model, falls back once to the agent's fallback model on failure, then routes the output — a chat reply for most roles, a real execution plan for Planner — and always writes a Run Ledger record.
+4. A billable outcome record is written only when a run is tied to an already-approved plan step — never for a bare chat reply or the plan-authoring run itself — mirroring the product's "fixed deliverable, approved, has a Run Ledger receipt" billing definition exactly.
+5. When an approved step executes (crx-003's execution job), it now dispatches through this same path to the step's responsible agent, re-checking whether that agent is still enabled at the moment it actually runs — not just when the job was first queued — so disabling an agent takes effect immediately, even for work already sitting in the retry loop.
+6. Run Ledger records can never be edited or deleted after the fact — a retried or fallback attempt always produces a brand-new record, preserving a complete history of every attempt.
+
+### Data model introduced
+
+| Table | Columns |
+|---|---|
+| `crux_agents` | `id`, `name`, `role`, `prompt_template`, `model`, `fallback_model`, `temperature`, `enabled`, `project_id` |
+| `crux_runs` | `id`, `agent_id`, `plan_step_id`, `user_id`, `model`, `provider`, `prompt_ref`, `context_refs`, `tokens_in`, `tokens_out`, `cost`, `output_ref`, `created_at` |
+| `crux_outcomes` | `id`, `run_id`, `outcome_type`, `project_id`, `billed_at` |
+| `crux_messages` (extended) | `+ agent_id` — which agent, if any, authored a given reply |
+
+### What's deliberately not in this task
+
+- No real AI model provider exists yet — every agent runs on the deterministic Mock Provider; the real providers (OpenAI, Anthropic, Gemini, Azure OpenAI, Ollama, Local Models) arrive in a later task behind the exact same provider interface, so nothing built here needs to change when they land.
+- No permission-filtered knowledge retrieval (project Issues/Wiki/Repository content) feeds an agent's context yet — only conversation history does; the seam for a later task to add it already exists.
+- The 5 Phase 2/3 agents exist only as disabled configuration rows — none of them have real behavior wired up yet.
+- Billing/quota enforcement isn't built — outcome records are captured but nothing yet meters them against a plan tier.
+
+---
+
 ## Cumulative feature list (everything usable today)
 
 - Install and register the plugin; per-project opt-in via the Crux AI module.
-- Global Administration Crux area (10 tabs, placeholder data) and per-project Crux workspace (9 tabs, mostly placeholder).
+- Global Administration Crux area (10 tabs) and per-project Crux workspace (9 tabs) — Agents (both) now show and edit real data; the rest remain placeholder pending later tasks.
 - Real, permission-gated navigation — tabs a user can't access are removed from the tab bar entirely.
 - A working Chat tab: persisted conversations, 21-intent classification, a clarification loop with the HRMS worked example, async processing with a typing indicator, and a graceful out-of-scope fallback.
+- A real Requirement Analyst → Planner hand-off that drafts an actual execution plan from a well-specified chat request, running on a deterministic Mock Provider.
+- A full approval workflow: per-step and plan-level Approve/Reject/Modify, a two-tier destructive-action gate, live in-place status updates, retry-then-fail execution, and notifications on every transition.
+- An append-only Run Ledger recording every agent invocation, with billable-outcome tracking that only fires for real, approved deliverables.
+- Agent attribution badges on chat messages and plan steps, and editable Agents tabs (Administration + per-project, with global-default/project-override semantics) for all 12 catalog agents.
 
 ## What's next
 
-Every remaining task lives in `backlog/specification/` (crx-003 through crx-026), covering — in order — the approval-gated execution plan (crx-003), the first real agents and Run Ledger (crx-004), permission-filtered knowledge retrieval (crx-005), and the first real AI model provider (crx-006), before Phase 2–4 add multi-agent collaboration, integrations, billing/analytics, automation, and the Developer Agent's git workflow. See [roadmap.md](roadmap.md) for the phase breakdown and `TODO.md` at the repo root for current task status.
+Every remaining task lives in `backlog/specification/` (crx-005 through crx-026), covering — in order — permission-filtered knowledge retrieval (crx-005) and the first real AI model provider (crx-006), before Phase 2–4 add multi-agent collaboration, integrations, billing/analytics, automation, and the Developer Agent's git workflow. See [roadmap.md](roadmap.md) for the phase breakdown and `TODO.md` at the repo root for current task status.
