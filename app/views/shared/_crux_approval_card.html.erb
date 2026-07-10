@@ -1,0 +1,58 @@
+<% steps = plan.plan_steps.order(:id) %>
+<div class="crux-approval-card" data-plan-id="<%= plan.id %>">
+  <div class="crux-approval-header">
+    <span class="crux-approval-title">Execution Plan #<%= plan.id %></span>
+    <span class="crux-status-pill crux-status-<%= plan.status %>" data-role="plan-status"><%= plan.status.to_s.tr('_', ' ').capitalize %></span>
+  </div>
+
+  <table class="list crux-approval-steps">
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Target</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% steps.each_with_index do |step, index| %>
+        <tr class="crux-approval-step<%= ' crux-approval-step-destructive' if step.destructive? %>" data-step-id="<%= step.id %>">
+          <td><%= index + 1 %></td>
+          <td>
+            <%= step.action_type.to_s.tr('_', ' ').capitalize %>
+            <% if step.destructive? %>
+              <span class="crux-badge crux-badge-danger" title="Requires the &quot;approve destructive actions&quot; permission">Destructive</span>
+            <% end %>
+          </td>
+          <td><%= step.target_type %><%= " ##{step.target_id}" if step.target_id %></td>
+          <td>
+            <span class="crux-status-pill crux-status-<%= step.status %>" data-role="step-status"><%= step.status.to_s.tr('_', ' ').capitalize %></span>
+            <% if step.error_message.present? %>
+              <div class="crux-approval-error"><%= step.error_message %></div>
+            <% end %>
+          </td>
+          <td class="crux-approval-actions">
+            <% if step.awaiting_approval? %>
+              <% can_approve = Crux::ApprovalGate.can_approve?(User.current, step) %>
+              <button type="button" class="crux-approval-approve"
+                      data-url="<%= project_crux_pending_action_step_approve_path(@project, step) %>"
+                      <%= 'disabled title="Requires the approve destructive actions permission"'.html_safe unless can_approve %>>Approve</button>
+              <button type="button" class="crux-approval-reject"
+                      data-url="<%= project_crux_pending_action_step_reject_path(@project, step) %>">Reject</button>
+              <% if step.action_type == 'assign_users' %>
+                <button type="button" class="crux-approval-modify"
+                        data-url="<%= project_crux_pending_action_step_modify_path(@project, step) %>">Modify</button>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="crux-approval-meta">
+    Estimated Time: <%= plan.estimated_time.presence || '—' %> &nbsp; Estimated AI Cost: <%= plan.estimated_cost.presence || '—' %>
+  </div>
+
+  <% if plan.awaiting_approval? %>
+    <div class="crux-approval-plan-actions">
+      <button type="button" class="crux-approval-approve-all" data-url="<%= project_crux_pending_action_plan_approve_path(@project, plan) %>">Approve All</button>
+      <button type="button" class="crux-approval-reject-all" data-url="<%= project_crux_pending_action_plan_reject_path(@project, plan) %>">Reject</button>
+    </div>
+  <% end %>
+</div>

@@ -2,6 +2,7 @@ plugin_lib = File.expand_path('../lib', __FILE__)
 
 Rails.configuration.to_prepare do
   require_relative 'lib/redmineflux_crux/hooks/crux_admin_hooks'
+  require_relative 'lib/redmineflux_crux/seed/stub_plan_generator'
 end
 
 Redmine::Plugin.register :redmineflux_crux do
@@ -30,7 +31,9 @@ Redmine::Plugin.register :redmineflux_crux do
                :project_crux_settings => [:index]
 
     permission :crux_approve,
-               :project_crux_pending_actions => [:index]
+               :project_crux_pending_actions => [
+                 :index, :approve_plan, :reject_plan, :approve_step, :reject_step, :modify_step
+               ]
 
     permission :crux_approve_destructive, {}
 

@@ -1,0 +1,108 @@
+/* ============================================================
+   redmineflux_crux – Approval card (Pending Actions / plan preview)
+   ============================================================ */
+
+.crux-approval-card {
+  border: 1px solid #dde3e8;
+  border-radius: 6px;
+  background: #fff;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.crux-approval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.crux-approval-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.crux-status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.crux-status-awaiting_approval { background: #fff1d6; color: #9a6400; }
+.crux-status-approved,
+.crux-status-completed { background: #e3f6e5; color: #1e7d32; }
+.crux-status-rejected,
+.crux-status-failed { background: #fde2e1; color: #b3261e; }
+.crux-status-executing,
+.crux-status-planned { background: #e5f1fa; color: #0f6fb0; }
+
+.crux-approval-steps { width: 100%; margin-bottom: 12px; }
+
+.crux-approval-step-destructive { background: #fff6f5; }
+
+.crux-approval-error {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #b3261e;
+}
+
+.crux-approval-actions button {
+  margin-right: 6px;
+  padding: 4px 10px;
+  border: 1px solid #ccd3d8;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.crux-approval-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crux-approval-approve,
+.crux-approval-approve-all {
+  border-color: #1e7d32;
+  color: #1e7d32;
+}
+
+.crux-approval-reject,
+.crux-approval-reject-all {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
+.crux-approval-meta {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.crux-approval-plan-actions {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.crux-approval-plan-actions button {
+  margin-right: 6px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.crux-approval-approve-all {
+  background: #1e7d32;
+  color: #fff;
+  border: none;
+}
+
+.crux-approval-reject-all {
+  background: #fff;
+  border: 1px solid #b3261e;
+  color: #b3261e;
+}

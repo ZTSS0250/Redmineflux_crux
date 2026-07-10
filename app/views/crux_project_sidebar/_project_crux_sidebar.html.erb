@@ -1,6 +1,11 @@
 <%# ── Crux Project Sidebar ─────────────────────────────── %>
 <%= stylesheet_link_tag('crux_sidebar', plugin: 'redmineflux_crux') %>
 
+<% crux_pending_count = Crux::PlanStep
+     .joins(execution_plan: :conversation)
+     .where(crux_conversations: { project_id: @project.id }, status: 'awaiting_approval')
+     .count %>
+
 <script>
   $(document).ready(function() {
     var cruxMenu = $('#main-menu a.crux-ai');
@@ -69,6 +74,9 @@
       <circle cx="12" cy="12" r="10"/>
       <polyline points="12 6 12 12 16 14"/>
     </svg>
+    <% if crux_pending_count > 0 %>
+      <span class="crux-sidebar-badge"><%= crux_pending_count %></span>
+    <% end %>
   <% end %>
 </div>
 

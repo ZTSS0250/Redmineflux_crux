@@ -2,11 +2,101 @@
   <%= render 'crux_project_sidebar/project_crux_sidebar' %>
 <% end %>
 <%= stylesheet_link_tag('crux_dashboard', plugin: 'redmineflux_crux') %>
+<%= stylesheet_link_tag('crux_approval', plugin: 'redmineflux_crux') %>
 
 <h2><%= l(:label_pending_actions, :scope => :crux) %></h2>
-<span class="crux-demo-notice">Demo preview — not live data</span>
 
-<div class="crux-empty-state">
-  <p>Nothing waiting on you.</p>
-  <p>Approved and rejected items move to Runs.</p>
-</div>
+<% if @plans.empty? %>
+  <div class="crux-empty-state">
+    <p>Nothing waiting on you.</p>
+    <p>Approved and rejected items move to Runs.</p>
+  </div>
+<% else %>
+  <% @plans.each do |plan| %>
+    <%= render 'shared/crux_approval_card', plan: plan %>
+  <% end %>
+<% end %>
+
+<script>
+  (function() {
+    function csrfToken() {
+      var el = document.querySelector('meta[name="csrf-token"]');
+      return el ? el.getAttribute('content') : null;
+    }
+
+    function post(url, body, onSuccess, onError) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.setRequestHeader('Accept', 'application/json');
+      var token = csrfToken();
+      if (token) { xhr.setRequestHeader('X-CSRF-Token', token); }
+      xhr.onload = function() {
+        var data = {};
+        try { data = JSON.parse(xhr.responseText); } catch (e) { /* ignore */ }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          onSuccess(data);
+        } else {
+          onError(data.error || 'Something went wrong.');
+        }
+      };
+      xhr.onerror = function() { onError('Network error.'); };
+      xhr.send(body || '');
+    }
+
+    function titleize(status) {
+      return status.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    }
+
+    function updatePill(el, status) {
+      if (!el) { return; }
+      el.className = el.className.replace(/crux-status-\S+/, 'crux-status-' + status);
+      el.textContent = titleize(status);
+    }
+
+    function applyPlanUpdate(card, data) {
+      updatePill(card.querySelector('[data-role="plan-status"]'), data.status);
+
+      (data.steps || []).forEach(function(step) {
+        var row = card.querySelector('.crux-approval-step[data-step-id="' + step.id + '"]');
+        if (!row) { return; }
+        updatePill(row.querySelector('[data-role="step-status"]'), step.status);
+        if (step.status !== 'awaiting_approval') {
+          Array.prototype.forEach.call(row.querySelectorAll('.crux-approval-actions button'), function(btn) {
+            btn.disabled = true;
+          });
+        }
+      });
+
+      if (data.status !== 'awaiting_approval') {
+        var planActions = card.querySelector('.crux-approval-plan-actions');
+        if (planActions) { planActions.parentNode.removeChild(planActions); }
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest(
+        '.crux-approval-approve, .crux-approval-reject, .crux-approval-modify, .crux-approval-approve-all, .crux-approval-reject-all'
+      );
+      if (!btn || btn.disabled) { return; }
+
+      var card = btn.closest('.crux-approval-card');
+      var url = btn.getAttribute('data-url');
+      var body = null;
+
+      if (btn.classList.contains('crux-approval-modify')) {
+        var assigneeId = window.prompt('New assignee user ID:');
+        if (!assigneeId) { return; }
+        body = 'plan_step[assignee_id]=' + encodeURIComponent(assigneeId);
+      }
+
+      btn.disabled = true;
+      post(url, body, function(data) {
+        applyPlanUpdate(card, data);
+      }, function(message) {
+        btn.disabled = false;
+        window.alert(message);
+      });
+    });
+  })();
+</script>

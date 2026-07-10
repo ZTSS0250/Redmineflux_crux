@@ -277,3 +277,19 @@ a.btn-crux-analytics svg {
 div#sidebar-switch-panel{
   display: none;
 }
+
+/* ── Pending Actions badge (ui_design.md: numeric badge on the tab) ──── */
+.crux-sidebar-badge {
+  position: absolute;
+  margin-left: 14px;
+  margin-top: -12px;
+  min-width: 15px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  background: #b3261e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
