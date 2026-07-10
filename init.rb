@@ -24,7 +24,7 @@ Redmine::Plugin.register :redmineflux_crux do
   project_module :crux_ai do
     permission :use_crux,
                :project_crux => [:index],
-               :project_crux_chat => [:index],
+               :project_crux_chat => [:index, :create_message],
                :project_crux_agents => [:index],
                :project_crux_runs => [:index],
                :project_crux_settings => [:index]
